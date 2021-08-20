@@ -1,0 +1,59 @@
+#!/bin/bash
+
+BOOKMARKS="$HOME/.config/bookmark"
+#choose your terminal
+TERMINAL=terminator
+TMENU=pmenu
+
+shopt -s lastpipe
+
+ops=(
+    weaver
+    weaver_gmail
+    weaver_mem
+    chromium
+    w3m
+    edit-bookmark
+)
+
+export url="$@"
+
+[[ ! $url ]] && exit
+# to use with rofi ##
+if [[ $TERM = linux && -n $DISPLAY ]]; then
+	option=$(for i in "${ops[@]}"; do echo "$i"; done |  rofi -dmenu -location 0 -l 10 -p : -font "Noto Sans Mono Medium 18" -mesg "open <u>$url</u> with...")
+elif [[ -n $DISPLAY ]]; then
+	echo -e "weaver\nchromium\nw3m\nlinks\nelinks\nedit-bookmark" | $TMENU -p "open $url with.." | read -a option
+else
+	echo -e "w3m\nlinks\nelinks\nedit-bookmark" | $TMENU -p "open $url with.." | read -a option
+fi
+## uncomment below line to use with dmenu , and comment out line before this ##
+#option=$(for i in "${ops[@]}"; do echo "$i"; done | /usr/bin/dmenu -p "open url with" )
+
+[[ ! $option ]] && exit
+
+case "$option" in
+
+#w3m) $TERMINAL -e "w3m $url" ;;
+w3m|links|elinks) 
+	if [[ $TERM = linux && -n $DISPLAY ]]; then
+		$TERMINAL -x "$option $url"
+	else
+		"$option" "$url"
+	fi
+;;
+edit-bookmark)
+    grep -ni "$url" .config/bookmark  | cut -d : -f 1  - | read line
+	if [[ $TERM = linux && -n $DISPLAY ]]; then
+		$TERMINAL -x "$EDITOR +$line .config/bookmark"
+	else
+		$EDITOR +$line .config/bookmark
+	fi
+	;;
+weaver) weaver //target/0 "$url" ;;
+weaver_gmail) weaver //target/0 //profile/gmail "$url" ;;
+weaver_mem) weaver //target/0 //profile/[mem] "$u4l" ;;
+
+## use any other external program with !chromium or !firefox or ?firefox etc.
+ *) "$option" "$url" ;;
+esac
