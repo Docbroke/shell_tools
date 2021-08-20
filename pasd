@@ -1,6 +1,6 @@
 #!/bin/ash
 
-cd $HOME/dotfiles/config/.config/password-store
+cd $HOME/.config/password-store
 
 #gpg -d $(fzf)
 
