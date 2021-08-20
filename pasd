@@ -1,0 +1,8 @@
+#!/bin/ash
+
+cd $HOME/dotfiles/config/.config/password-store
+
+#gpg -d $(fzf)
+
+file=$(find . -type f | fzf --border --reverse --height 10 --prompt "View Password: ")
+pass ${file%.gpg} && sleep 60
