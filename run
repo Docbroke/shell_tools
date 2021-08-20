@@ -1,0 +1,37 @@
+#!/bin/bash
+
+INFO() {
+cat << _end_of_help
+USAGE
+	run
+	-h/?/--help		to see this text
+Depends on
+	rofi:	when used with window manager shortcuts
+	fzf: 	when used from terminal
+Config files (shall be created by the user)
+	$HOME/.config/shortcuts
+	$HOME/.config/shortcuts_term
+_end_of_help
+}
+
+[[ -n "$1" ]] && \
+case "$1" in
+	\?|h|-h|--help) INFO && exit ;;
+	*) echo "unsupported option" && exit ;;
+esac
+
+shopt -s lastpipe
+## make temporary file and copy all commands to it
+f=$(mktemp /tmp/"${0##*/}".XXXXX)
+## with -type f, links are removed, e.g., libreoffice is a symlink to /usr/lib/libreoffice/program/soffice
+if [[ $TERM = linux && -n $DISPLAY ]]; then
+	cat $HOME/.config/shortcuts <(IFS=:; find $PATH -executable -printf "%f\n" | sort -ur ) > "$f"
+	rofi -dmenu -matching fuzzy -font "Noto Sans Mono Medium 18" -p "RUN THIS" -input $f | read command
+else
+	cat $HOME/.config/shortcuts_term <(IFS=:; find $PATH -executable -printf "%f\n" | sort -ur ) > "$f"
+	fzf --border --no-sort --reverse --height 10 --prompt "RUN THIS: " < $f | read command 
+fi
+## cleanup
+rm "$f"
+## run the command
+exec $command
