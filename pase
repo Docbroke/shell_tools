@@ -1,0 +1,8 @@
+#!/bin/ash
+
+cd /home/sharad/dotfiles/config/.config/password-store
+
+#gpg -d $(fzy)
+
+file=$(find . -type f | fzf --border --reverse --height 10 --prompt "EDIT Password: ")
+pass edit ${file%.gpg}
