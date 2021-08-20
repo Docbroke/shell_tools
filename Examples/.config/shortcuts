@@ -1,0 +1,14 @@
+browse
+terminator --geometry=800x400 -x openfile
+terminator --geometry=900x1000 -x vifm
+terminator --geometry=700x400  -x pasd
+terminator -x pase
+terminator --geometry=700x1000 -x f 
+terminator --geometry=900x1000 -x htop
+terminator
+chromium https://mail.google.com/
+chromium https://pyra-handheld.com/boards/
+chromium https://mail.protonmail.com/login
+chromium https://www.cricbuzz.com/
+chromium https://bbs.archlinux.org/search.php?action=show_replies 
+shutdown now
