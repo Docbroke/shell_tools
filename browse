@@ -1,0 +1,129 @@
+#!/bin/bash
+
+INFO() {
+    cat <<EOF>&2
+### USAGE ###
+	"$0"
+	"$0" -h/--help/?	: to view this text
+### DEPENDS ON ###
+     "surfraw"-for keyword based search, you will need /usr/lib/surfraw in your path, so add below line to your .bashrc (uncommented)
+     PATH=/usr/lib/surfraw:${PATH}
+     "trans" and "w3m" for language translations, https://github.com/soimort/translate-shell
+     "sdcv" for dictionary use
+### CONFIGURATION ###
+     place your browser in BROWSER=? line
+	 place your bookmarks text file with 1 url/line, put it in "BOOKMARKS=?" field 
+     default script uses rofi, to use dmenu uncomment the line starting with dmenu and comment out previous line starting with rofi
+### USE ###
+     enter text in rofi/dmenu field, it will be matched against bookmarks, <enter> to open selected bookmark
+     to search specific sites use keyword as first argument ( like go for google, wi for wikipedia, aw for archwiki etc.) > read the script to find out all keywords
+     to find out route from delhi to mumbai with google map, "nav delhi mumbai" or to search a location only use "map <location>"
+     if no keyword or url is used, entire argument will be searched with duckduckgo
+     to search with input text only (not matching bookmark) use <C-enter> (rofi only)
+     to edit selected bookmark use <C-space> (rofi only)
+EOF
+}
+
+[[ -n "$1" ]] && \
+case "$1" in
+	\?|-h|--help) INFO && exit ;;
+	*) echo "unsupported option" && exit ;;
+esac
+
+shopt -s lastpipe
+
+## Add name of your browser here ( not text-browsers )
+#BROWSER=${BROWSER:-"firefox"}
+BROWSER=url-handler
+TMENU=pmenu
+
+## add your plain text bookmarks here, you can add tag after the bookmark bookmart url e.g., "www.google.co.in search googlesearch", use "link-handler" for adding bookmarks
+BOOKMARKS=~/.config/bookmark
+export PATH=${HOME}/bin:${PATH}
+export PATH=/usr/lib/surfraw:${PATH}
+
+# use rofi to display bookmarks and select one
+if [[ $TERM = linux && -n $DISPLAY ]]; then
+	rofi -dmenu -i -matchin fuzzy -location 0 -l 10 -font "Noto Sans Mono Medium 18" -p $BROWSER -input "$BOOKMARKS" | read -a "url"
+else
+#	vis-menu -p $BROWSER < $BOOKMARKS | read -a "url"
+	$TMENU -p "$BROWSER: " < $BOOKMARKS | read -a "url"
+fi
+
+[[ ! $url ]] && exit
+
+duckimage() {
+x=$@
+$BROWSER "https://duckduckgo.com/?q=${x// /+}&ia=images&iax=1"
+}
+searximage() {
+x=$@
+$BROWSER "http://192.168.0.143:8888/?q=${x// /+}&categories=images"
+}
+searxvideo() {
+x=$@
+$BROWSER "http://192.168.0.143:8888/?q=${x// /+}&categories=videos"
+}
+duckvideo() {
+x=$@; $BROWSER "https://duckduckgo.com/?q=${x// /+}&ia=videos&iax=1"
+}
+DDG() {
+x=$@; $BROWSER "https://duckduckgo.com/?q=${x// /+}"
+}
+SEARX() {
+x=$@; $BROWSER "http://192.168.0.143:8888.be/?q=${x// /+}"
+}
+
+MED() {
+x=$@; $BROWSER "http://medical-dictionary.thefreedictionary.com/${x// /+}"
+}
+FLIPKART() {
+x=$@; $BROWSER "https://www.flipkart.com/search?q=${x// /+}"
+}
+NAV() {
+$BROWSER "https://maps.google.com/maps?saddr=$1&daddr=$2"
+}
+WIKI() {
+prefix="https://en.wikipedia.org/w/index.php?search="
+suffix="&go=Go"
+x=$@; $BROWSER "$prefix${x// /+}$suffix"
+
+}
+
+case "${url[0]}" in
+    *.*|*:*|*/*)		    $BROWSER "${url[0]}" ;;
+    aw|awiki)   archwiki    -browser=$BROWSER "${url[@]:1}" ;;
+    wi|wiki)    WIKI "${url[@]:1}" ;;
+    imdb)	    imdb        -browser=$BROWSER "${url[@]:1}" ;;
+    aur)	    aur         -browser=$BROWSER "${url[@]:1}" ;;
+    pkg)	    archpkg     -browser=$BROWSER "${url[@]:1}" ;;
+    ddg|S|dd)	DDG			"${url[@]:1}" ;;
+    go|gg|google)  google      -browser=$BROWSER "${url[@]:1}" ;;
+    map)        google -m   -browser=$BROWSER "${url[@]:1}" ;;
+    nav)	    NAV "${url[1]}" "${url[2]}" ;;
+#    image)	google -i   -browser=$BROWSER "${url[@]:1}" ;;   
+    image)     duckimage   "${url[@]:1}" ;;   
+#    video)	google -v   -browser=$BROWSER "${url[@]:1}" ;;   
+    video)      duckvideo   "${url[@]:1}" ;;
+    news)	    google -n   -browser=$BROWSER "${url[@]:1}" ;;      
+    yt|youtube)	youtube     -browser=$BROWSER "${url[@]:1}" ;;
+    ebay)	    ebay        -browser=$BROWSER "${url[@]:1}" ;;
+    fk|flipkart) FLIPKART   "${url[@]:1}" ;;
+    pubmed)	    pubmed      -browser=$BROWSER "${url[@]:1}" ;;
+    git|github)	github      -browser=$BROWSER "${url[@]:1}" ;;
+## ONLINE TRANSLATION
+## to use translation "trans" should be in path with w3m installed, translates to english
+    trans)      notify-send "$( trans -brief "${url[@]:1}" )" && exit ;;
+## translates to gujarati
+    trans_gu)      notify-send "$( trans -brief :gu "${url[@]:1}" )" && exit ;;
+## online medical dictionary
+    med)        MED         "${url[@]:1}" ;;
+#    *)	SEARX "${url[@]}" ;;
+    *)
+#        if [[ $BROWSER != dillo ]]; then
+#	        duckduckgo -j -browser=$BROWSER "${url[@]}"
+#	    else
+#	        google -browser=$BROWSER "${url[@]}"
+#	    fi ;;
+        DDG "${url[@]}" ;;
+esac
