@@ -1,6 +1,6 @@
 #!/bin/ash
 
-cd /home/sharad/dotfiles/config/.config/password-store
+cd $HOME/.config/password-store
 
 #gpg -d $(fzy)
 
