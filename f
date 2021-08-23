@@ -119,6 +119,306 @@ get_ls_colors() {
     export "${ls_cols[@]}" &>/dev/null
 }
 
+ 
+get_icon() {
+    # $1 Absolute path to the file
+    # $2 name of the file/directory
+    # $3 the extracted extension from the file name
+
+    # Icons for directories
+    [[ -d "$1" ]] && {
+        case "$2" in
+            # English
+                '.git'            ) printf -- ''; return ;;
+                'Desktop'         ) printf -- ''; return ;;
+                'Documents'       ) printf -- ''; return ;;
+                'Downloads'       ) printf -- ''; return ;;
+                'Dotfiles'        ) printf -- ''; return ;;
+                'Dropbox'         ) printf -- ''; return ;;
+                'Music'           ) printf -- ''; return ;;
+                'Pictures'        ) printf -- ''; return ;;
+                'Public'          ) printf -- ''; return ;;
+                'Templates'       ) printf -- ''; return ;;
+                'Videos'          ) printf -- ''; return ;;
+
+                *                 ) printf -- ''; return ;;
+        esac
+    }
+
+    # Icons for files with no extension
+    [[ "$2" == *"/$3" ]] && { 
+        case "$2" in
+            '_gvimrc'       | '_vimrc'       |\
+            'bspwmrc'       |'cmakelists.txt'|\
+            'config'        | 'Makefile'     |\
+            'makefile'      | 'sxhkdrc'      |\
+            'ini'                            ) printf -- ''; return ;;
+
+            'authorized_keys'                |\
+            'known_hosts'                    |\
+            'license'                        |\
+            'LICENSE'                        ) printf -- ''; return ;;
+
+            'gemfile'                        |\
+            'Rakefile'                       |\
+            'rakefile'                       ) printf -- ''; return ;;
+
+            'a.out'                          |\
+            'configure'                      ) printf -- ''; return ;;
+            
+            'dockerfile'                     ) printf -- ''; return ;;
+            'Dockerfile'                     ) printf -- ''; return ;;
+            'dropbox'                        ) printf -- ''; return ;;
+            'exact-match-case-sensitive-2'   ) printf -- 'X2'; return ;;
+            'ledger'                         ) printf -- ''; return ;;
+            'node_modules'                   ) printf -- ''; return ;;
+            'playlists'                      ) printf -- ''; return ;;
+            'procfile'                       ) printf -- ''; return ;;
+            'README'                         ) printf -- ''; return ;;
+            '*'                              ) printf -- ''; return ;;
+        esac
+    }
+
+    # Icon for files with the name starting with '.' 
+    # without an extension
+    [[ "$2" == ".$3" ]] && {
+        case "$2" in
+            '.bash_aliases'                |\
+            '.bash_history'                |\
+            '.bash_logout'                 |\
+            '.bash_profile'                |\
+            '.bashprofile'                 |\
+            '.bashrc'                      |\
+            '.dmrc'                        |\
+            '.DS_Store'                    |\
+            '.fasd'                        |\
+            '.gitattributes'               |\
+            '.gitconfig'                   |\
+            '.gitignore'                   |\
+            '.inputrc'                     |\
+            '.jack-settings'               |\
+            '.nvidia-settings-rc'          |\
+            '.pam_environment'             |\
+            '.profile'                     |\
+            '.recently-used'               |\
+            '.selected_editor'             |\
+            '.Xauthority'                  |\
+            '.Xdefaults'                   |\
+            '.xinitrc'                     |\
+            '.xinputrc'                    |\
+            '.Xresources'                  |\
+            '.zshrc'                       ) printf -- ''; return ;;
+
+            '.vim'                         |\
+            '.viminfo'                     |\
+            '.visrc'                       |\
+            '.vimrc'                       ) printf -- ''; return ;;
+
+            '.fehbg'                       ) printf -- ''; return ;;
+            '.gvimrc'                      ) printf -- ''; return ;;
+            '.ncmpcpp'                     ) printf -- ''; return ;;
+
+            '*'                            ) printf -- ''; return ;;
+        esac
+    }
+
+    # Icon for files whose names have an extension
+    [[ "$2" == *"."* ]] && {
+        # Special files
+        case "$2" in
+            'cmakelists.txt'                   |\
+            'Makefile.ac'                      |\
+            'Makefile.in'                      |\
+            'mimeapps.list'                    |\
+            'user-dirs.dirs'                   ) printf -- ''; return ;;
+
+            'README.markdown'                  |\
+            'README.md'                        |\
+            'README.rst'                       |\
+            'README.txt'                       ) printf -- ''; return ;;
+
+            'config.ac'                        |\
+            'config.m4'                        |\
+            'config.mk'                        ) printf -- ''; return ;;
+            
+            'gruntfile.coffee'                 |\
+            'gruntfile.js'                     |\
+            'gruntfile.ls'                     ) printf -- ''; return ;;
+            
+            'package-lock.json'                |\
+            'package.json'                     |\
+            'webpack.config.js'                ) printf -- ''; return ;;
+            
+            'gulpfile.coffee'                  |\
+            'gulpfile.js'                      |\
+            'gulpfile.ls'                      ) printf -- ''; return ;;
+
+            'LICENSE.txt'                      |\
+            'LICENSE.md'                       ) printf -- ''; return ;;
+            
+            
+            '.gitlab-ci.yml'                   ) printf -- ''; return ;;
+            'config.ru'                        ) printf -- ''; return ;;
+            'docker-compose.yml'               ) printf -- ''; return ;;
+            'exact-match-case-sensitive-1.txt' ) printf -- 'X1'; return ;;
+            'favicon.ico'                      ) printf -- ''; return ;;
+            'mix.lock'                         ) printf -- ''; return ;;
+            'react.jsx'                        ) printf -- ''; return ;;
+        esac
+
+        # extension
+        case "$2" in
+           *.7z  |*.apk   |\
+           *.bz2 |*.cab   |\
+           *.cpio|*.deb   |\
+           *.gem |*.gz    |\
+           *.gzip|*.lha   |\
+           *.lzh |*.lzma  |\
+           *.rar |*.rpm   |\
+           *.tar |*.tgz   |\
+           *.xbps|*.xz    |\
+           *.zip           ) printf -- ''; return ;;
+
+           *.bat |*.conf  |\
+           *.cvs           |\
+           *.htaccess      |\
+           *.htpasswd      |\
+           *.ini |*.rc    |\
+           *.toml|*.yaml  |\
+           *.yml           ) printf -- ''; return ;;
+
+           *.asp |*.awk   |\
+           *.bash|*.csh   |\
+           *.efi |*.elf   |\
+           *.fish|*.ksh   |\
+           *.ps1 |*.rom   |\
+           *.zsh |*.sh    ) printf -- ''; return ;;
+
+           *.avi |*.flv   |\
+           *.m4v |*.mkv   |\
+           *.mov |*.mp4   |\
+           *.mpeg|*.mpg   |\
+           *.webm          ) printf -- ''; return ;;
+
+
+           *.bmp |*.gif   |\
+           *.ico |*.jpeg  |\
+           *.jpg |*.png   |\
+           *.ppt |*.pptx  |\
+           *.webp          ) printf -- ''; return ;;
+
+           *.aup |*.cue   |\
+           *.flac|*.m4a   |\
+           *.mp3 |*.ogg   |\
+           *.wav           ) printf -- ''; return ;;
+
+           *.c   |*.c++   |\
+           *.cc  |*.cp    |\
+           *.cpp |*.cxx   |\
+           *.h   |*.hpp   ) printf -- ''; return ;;
+
+           *.docx|*.doc   |\
+           *.epub|*.pdf   |\
+           *.rtf |*.xls   |\
+           *.xlsx          ) printf -- ''; return ;;
+
+           *.ejs |*.haml  |\
+           *.htm |*.html  |\
+           *.slim| *.xhtml|\
+           *.xml           ) printf -- ''; return ;;
+
+           *.a   |*.cmake |\
+           *.jl  |*.o     |\
+           *.so            ) printf -- ''; return ;;
+
+           *.asm |*.css   |\
+           *.less|*.s     ) printf -- ''; return ;;
+
+           *.db  |*.dump  |\
+           *.img |*.iso   |\
+           *.sql           ) printf -- ''; return ;;
+
+           *.f#  |*.fs    |\
+           *.fsi |*.fsx   |\
+           *.fsscript      ) printf -- ''; return ;;
+
+           *.markdown      |\
+           *.md  |*.mdx   |\
+           *.rmd           ) printf -- ''; return ;;
+
+           *.gemspec       |\
+           *.rake|*.rb    ) printf -- ''; return ;;
+
+           *.dll |*.exe   |\
+           *.msi           ) printf -- ''; return ;;
+
+           *.eex |*.ex    |\
+           *.exs |*.leex  ) printf -- ''; return ;;
+
+           *.class         |\
+           *.jar |*.java  ) printf -- ''; return ;;
+
+           *.mustache      |\
+           *.hbs           ) printf -- ''; return ;;
+
+           *.json          |\
+           *.webmanifest   ) printf -- ''; return ;;
+
+           *.py  |*.pyc   |\
+           *.pyd |*.pyo   ) printf -- ''; return ;;
+
+           *.cbr |*.cbz   ) printf -- ''; return ;;
+           *.clj |*.cljc  ) printf -- ''; return ;;
+           *.cljs|*.edn   ) printf -- ''; return ;;
+           *.hrl |*.erl   ) printf -- ''; return ;;
+           *.hh  |*.hxx   ) printf -- ''; return ;;
+           *.hs  |*.lhs   ) printf -- ''; return ;;
+           *.js  |*.mjs   ) printf -- ''; return ;;
+           *.jsx |*.tsx   ) printf -- ''; return ;;
+           *.key |*.pub   ) printf -- ''; return ;;
+           *.ml  |*.mli   ) printf -- 'λ'; return ;;
+           *.pl  |*.pm    ) printf -- ''; return ;;
+           *.vim |*.vimrc ) printf -- ''; return ;;
+           *.psb |*.psd   ) printf -- ''; return ;;
+           *.rlib|*.rs    ) printf -- ''; return ;;
+           *.sass|*.scss  ) printf -- ''; return ;;
+           *.sln |*.suo   ) printf -- ''; return ;;
+
+           *.coffee        ) printf -- ''; return ;;
+           *.ai            ) printf -- ''; return ;;
+           *.cs            ) printf -- ''; return ;;
+           *.d             ) printf -- ''; return ;;
+           *.dart          ) printf -- ''; return ;;
+           *.diff          ) printf -- ''; return ;;
+           *.elm           ) printf -- ''; return ;;
+           *.fi            ) printf -- '|'; return ;;
+           *.go            ) printf -- ''; return ;;
+           *.log           ) printf -- ''; return ;;
+           *.lua           ) printf -- ''; return ;;
+           *.nix           ) printf -- ''; return ;;
+           *.php           ) printf -- ''; return ;;
+           *.pp            ) printf -- ''; return ;;
+           *.r             ) printf -- 'ﳒ'; return ;;
+           *.rproj         ) printf -- '鉶'; return ;;
+           *.rss           ) printf -- ''; return ;;
+           *.scala         ) printf -- ''; return ;;
+           *.styl          ) printf -- ''; return ;;
+           *.swift         ) printf -- ''; return ;;
+           *.t             ) printf -- ''; return ;;
+           *.tex           ) printf -- 'ﭨ'; return ;;
+           *.ts            ) printf -- ''; return ;;
+           *.twig          ) printf -- ''; return ;;
+           *.vue           ) printf -- '﵂'; return ;;
+           *.xcplayground  ) printf -- ''; return ;;
+           *.xul           ) printf -- ''; return ;;
+        esac
+    }
+
+
+    printf -- ''; return
+}
+
+
 status_line() {
     # Status_line to print when files are marked for operation.
     local mark_ui="[${#marked_files[@]}] selected (${file_program[*]}) [p] ->"
@@ -204,6 +504,7 @@ print_line() {
     local file_ext=${file_name##*.}
     local format
     local suffix
+    local icon
 
     # If the dir item doesn't exist, end here.
     if [[ -z ${list[$1]} ]]; then
@@ -278,9 +579,16 @@ print_line() {
     # Remove all non-printable characters.
     file_name=${file_name//[^[:print:]]/^[}
 
-    printf '\r%b%s\e[m\r' \
-        "${file_pre}${format}" \
-        "${file_name}${suffix}${file_post}"
+	# Do not print icons if running in console
+	if [[ -n $DISPLAY ]]; then
+    	printf '\r%b%s\e[m\r' \
+        	"${file_pre}${format}$(get_icon "${list[$1]}" "$file_name" "$file_ext")""  " \
+        	"${file_name}${suffix}${file_post}"
+    else
+    	printf '\r%b%s\e[m\r' \
+        	"${file_pre}${format}" \
+        	"${file_name}${suffix}${file_post}"
+    fi
 }
 
 draw_dir() {
@@ -397,7 +705,6 @@ mark() {
         	;;
         ${FFF_KEY_MOVE:=m}|${FFF_KEY_MOVE_ALL:=M}) 
         	type rsync &> /dev/null && \
-        	file_program=(rsync -avP --links --safe-links --remove-source-files) || \
         	file_program=(mv -i)  ;;
         ${FFF_KEY_LINK:=s}|${FFF_KEY_LINK_ALL:=S}) file_program=(ln -s)  ;;
 
