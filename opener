@@ -22,11 +22,12 @@ TBROWSERS=("w3m" "links" "lynx" "elinks")
 XEDITORS=("gvim" "geany" "leafpad" "mousepad")
 TEDITORS=("cat" "less" "vim" "vis" "nano" "micro")
 XFMS=("pcmanfm" "nautilus" "rof" "thunar")
-TFMS=("vifm" "ranger" "mc" "fff" "nnn" "clifm")
+TFMS=("ncdu" "du -h" "vifm" "ranger" "mc" "fff" "nnn" "clifm")
 PDFVIEWERS=("llpp" "xournalpp" "mupdf" "qpdfview")
 DOCVIEWERS=("llpp" "foliate" "mupdf" "qpdfview")
 CHMVIEWERS=("kchmviewer" "xchm" "chmopen")
-BOOKVIEWERS=("$TERMINAL -p Large -x epy.py" "foliate" "llpp" "mupdf")
+BOOKVIEWERS=("$TERMINAL --geometry=1920x1050 -p Large -x epy.py" "foliate" "llpp" "mupdf")
+ARCHIVERS=("als" "lsar" "unar" "aunpack -D")
 
 ## some defaults
 PLAYER=mpv
@@ -37,7 +38,7 @@ BROWSER=weaver
 PDFVIEWER=llpp
 DOCVIEWER=llpp
 CHMVIEWER=kchmviewer
-BOOKVIEWER="$TERMINAL -p Large -x epy.py"
+BOOKVIEWER="$TERMINAL --geometry=1920x1050  -p Large -x epy.py"
 
 case "$mime_type" in
 	text/html|text/xml|application/x-mimearchive|message/rfc822)
@@ -180,7 +181,7 @@ case "$mime_type" in
 		gpg -d "$file"
 	;;
 
-	application/*zip*|application/x-?ar|application/x-?z*|application/x-compressed*)
+	application/*zip*|application/x-?ar|application/x-?z*|application/x-compressed*|application/vnd.rar|application/x-cd-image|application/x-msi)
 		case "$file" in
 			*.xoj|*.xopp) xournalpp "$file" &> /dev/null ;;
 			*.cb?) 
@@ -191,11 +192,17 @@ case "$mime_type" in
 				done
 			;;
 			*)
-				select ops in exit als lsar unar aunpack; do
-					[[ $ops = exit ]] && break
-					[[ $ops = aunpack ]] && aunpack -D "$file"
-					"$ops" "$file"
-				done
+				if [[ $default == true ]]; then
+					mkdir $file.tmp
+					archivemount "$file" "$file.tmp"
+					echo -e "$file mounted at $file.tmp directory\n remove with fusermount -u $file.tmp"
+				else  
+					select ops in exit "${ARCHIVERS[@]}" ; do
+						[[ $ops = exit ]] && break
+						# [[ $ops = aunpack ]] && aunpack -D "$file"
+						$ops "$file"
+					done
+				fi
 			;;
 		esac
 	;;
@@ -212,7 +219,7 @@ case "$mime_type" in
 	;;
 
 	inode/directory)
-		select ops in exit "${XFMS[@]}" "${TFMS[@]}"; do
+		select ops in exit "${TFMS[@]}" "${XFMS[@]}"; do
 			[[ $ops = exit ]] && break
 			$ops "$file"
 		done
@@ -221,6 +228,15 @@ case "$mime_type" in
 	inode/x-empty)
 		echo "empty file"
 		rm -i "$file"
+	;;
+
+	inode/mount-point)
+		## unmount by default
+		# select ops in exit unmount; do
+			# [[ $ops = exit ]] && break
+			# [[ $ops = unmount ]] && fusermount -zu "$file" && rmdir "$file"
+			fusermount -zu "$file" && rmdir "$file" && echo "$file unmounted and removed"
+		# done
 	;;
 
 	*) 
