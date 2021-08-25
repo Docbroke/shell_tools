@@ -582,7 +582,7 @@ print_line() {
 	# Do not print icons if running in console
 	if [[ -n $DISPLAY ]]; then
     	printf '\r%b%s\e[m\r' \
-        	"${file_pre}${format}$(get_icon "${list[$1]}" "$file_name" "$file_ext")""  " \
+        	"${file_pre}${format}$(get_icon "${list[$1]}" "$file_name")""  " \
         	"${file_name}${suffix}${file_post}"
     else
     	printf '\r%b%s\e[m\r' \
@@ -722,8 +722,8 @@ mark() {
 }
 
 trash() {
-    # Trash a file.
-    cmd_line "Remove [${#marked_files[@]}] items PERMANENTLY ?  [y/n]: " y n
+    # Remove file(s).
+    cmd_line "Remove [${#marked_files[@]}]  items PERMANENTLY ?  [y/n]: " y n
 
     [[ $cmd_reply != y ]] &&
         return
@@ -788,7 +788,7 @@ open() {
         reset_terminal
         opener -d "$1"
         setup_terminal
-        redraw
+        redraw full
     fi
 }
 
@@ -935,7 +935,7 @@ key() {
         	reset_terminal
         	opener "${list[scroll]}"
         	setup_terminal
-        	redraw
+        	redraw full
 		;;
 
         # Go to the parent directory.
@@ -1134,12 +1134,8 @@ key() {
         ;;
 
         # Create new file or directory.
-        # ${FFF_KEY_MKDIR:=n})
         n)
-            # cmd_line "mkdir: " "dirs"
             cmd_line "create new file/directory: " "dirs"
-			# [[ $cmd_reply == */ ]] && newcmd="mkdir -p" || newcmd=">"
-            # [[ $cmd_reply ]] &&
                 if [[ -e $cmd_reply ]]; then
                     cmd_line "warn: '$cmd_reply' already exists."
 
@@ -1148,7 +1144,6 @@ key() {
                     	mkdir -p "${PWD}/${cmd_reply}" || \
                     	: > "$cmd_reply" 
                     redraw full
-
                 else
                     cmd_line "warn: no write access to dir."
                 fi
@@ -1251,7 +1246,8 @@ key() {
                 printf '%s\n' "$PWD" > "$FFF_CD_FILE"
 
             exit
-        ;;
+         ;;
+         
     esac
 }
 

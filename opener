@@ -28,10 +28,21 @@ DOCVIEWERS=("llpp" "foliate" "mupdf" "qpdfview")
 CHMVIEWERS=("kchmviewer" "xchm" "chmopen")
 BOOKVIEWERS=("$TERMINAL --geometry=1920x1050 -p Large -x epy.py" "foliate" "llpp" "mupdf")
 ARCHIVERS=("als" "lsar" "unar" "aunpack -D")
+VIEWERS=("feh" "sxiv" "gifview -a" "display" "mtpaint" "gimp" "viewnoir" "fbi" "lp")
+VPLAYERS=("mpv --player-operation-mode=pseudo-gui" "vlc" "cvlc" "ffplay" "ffprobe" "mediainfo")
+APLAYERS=("mpv --player-operation-mode=pseudo-gui" "vlc" "cvlc" "ffplay" "ffprobe" "mediainfo" "soxi" "mpg123")
 
 ## some defaults
-PLAYER=mpv
-VIEWER=sxiv
+if [[ -n "$DISPLAY" ]]; then
+	PLAYER="mpv --player-operation-mode=pseudo-gui"
+else
+	PLAYER="mpv --vo=drm"
+fi
+if [[ -n "$DISPLAY" ]]; then
+	VIEWER="sxiv -fbq $file $PWD"
+else
+	VIEWER=fbi
+fi
 TERMINAL=terminator
 EDITOR=vis
 BROWSER=weaver
@@ -42,8 +53,9 @@ BOOKVIEWER="$TERMINAL --geometry=1920x1050  -p Large -x epy.py"
 
 case "$mime_type" in
 	text/html|text/xml|application/x-mimearchive|message/rfc822)
-		[[ $default == true ]] && $BROWSER "$file" && exit
-		if [[ $TERM = linux && -n $DISPLAY ]]; then
+		if [[ $default == true ]]; then 
+			$BROWSER "$file" && exit
+		elif [[ $TERM = linux && -n $DISPLAY ]]; then
 			select ops in exit "${XBROWSERS[@]}" "${TBROWSERS[@]}" $EDITOR; do
 				[[ $ops = exit ]] && exit
 				[[ $ops = w3m || $ops = links || $ops = elinks || $EDITOR ]] && $TERMINAL -x "$ops" "$file" &
@@ -77,25 +89,18 @@ case "$mime_type" in
 
 	image/*)
 		[[ $default == true ]] && $VIEWER "$file" && exit
-		if [[ -n $DISPLAY ]]; then
-			select ops in exit sxiv feh mtpaint lp gifview display gimp; do
-				[[ $ops = exit ]] && break
-				[[ $ops = sxiv ]] && sxiv -fbq "$file" "$PWD" &
-				[[ $ops = gifview ]] && gifview -a "$file" &
-				"$ops" "$file" &> /dev/null &
-			done
-		else
-			fbi "$file"
-		fi
+		select ops in exit "${VIEWERS[@]}"; do
+			[[ $ops = exit ]] && break
+			$ops "$file" &> /dev/null &
+		done
 	;;
 
 	video/*|application/x-matroska)
 		[[ $default == true ]] && $PLAYER "$file" && exit
 		if [[ -n $DISPLAY ]]; then
-			select ops in exit mpv vlc cvlc ffplay ffprobe mediainfo mplayer; do
+			select ops in exit "${VPLAYERS[@]}"; do
 				[[ $ops = exit ]] && break
-				[[ $ops = mpv ]] && mpv --player-operation-mode=pseudo-gui -- "$file" && exit
-				"$ops" "$file" &
+				$ops "$file" &
 			done
 		else
 			mpv --vo=drm -- "$file"
@@ -104,10 +109,9 @@ case "$mime_type" in
 
 	audio/*| application/ogg|application/x-ogg|application/mxf|application/sdp|application/smil|application/x-smil|application/streamingmedia|application/x-streamingmedia|application/vnd.rn-realmedia|application/vnd.rn-realmedia-vbr)
 		[[ $default == true ]] && $PLAYER "$file" && exit
-		select ops in exit mpv vlc cvlc ffplay ffprobe soxi mediainfo mpg123 mplayer; do
+		select ops in exit "${APLAYERS[@]}"; do
 			[[ $ops = exit ]] && break
-			[[ $ops = mpv ]] && mpv --player-operation-mode=pseudo-gui -- "$file" &
-			"$ops" "$file" &
+			$ops "$file" &
 		done
 	;;
 
@@ -181,7 +185,7 @@ case "$mime_type" in
 		gpg -d "$file"
 	;;
 
-	application/*zip*|application/x-?ar|application/x-?z*|application/x-compressed*|application/vnd.rar|application/x-cd-image|application/x-msi)
+	application/*zip*|application/x-?ar|application/x-?z*|application/x-compressed*|application/vnd.rar|application/x-*-image|application/x-msi)
 		case "$file" in
 			*.xoj|*.xopp) xournalpp "$file" &> /dev/null ;;
 			*.cb?) 
